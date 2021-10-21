@@ -1,24 +1,23 @@
 //
 // Created by Nikolai on 18.10.2021.
 //
+#pragma once
 
-#ifndef ARDUINOPROJECT_SWITCHWEBWRAPPER_HPP
-#define ARDUINOPROJECT_SWITCHWEBWRAPPER_HPP
-
+//#include <BlynkSimpleEsp8266.h>
 #include "ISwitchBase.hpp"
 //#include "../SmartHomeMaintain/ISwitchBase.hpp"
-class SwitchWebWrapper : public ISwitchBase{
+class SwitchBlynkWrapper : public ISwitchBase{
 protected:
     ISwitchBase *_switch;
-    String _webName;
+    //BlynkController * _blynk;
+    int virtualPinNumber = 0;
 public:
-    SwitchWebWrapper(ISwitchBase * switchBase);
+    SwitchBlynkWrapper(ISwitchBase * switchBase);
     bool state() override;
     void turnOn() override;
     void turnOff() override;
     String makeWebPage() override;
-    void setWebName(String webName);
+    void setVirtualPinNumber(int virtualPinNumber);
+    //void setBlynk(Blynk* blynk);
 };
 
-
-#endif //ARDUINOPROJECT_SWITCHWEBWRAPPER_HPP

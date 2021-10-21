@@ -28,13 +28,5 @@ void SwitchLogger::setSerial(HardwareSerial *serial) {
 }
 
 String SwitchLogger::makeWebPage() {
-    String webOfProx = _switch->makeWebPage();
-    if( webOfProx.length() > 0 )
-    {
-        return webOfProx;
-    }
-    else
-    {
-        return ISwitchBase::makeWebPage();
-    }
+    return _switch->makeWebPage();
 }

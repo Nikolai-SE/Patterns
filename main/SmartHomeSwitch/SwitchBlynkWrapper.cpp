@@ -2,38 +2,42 @@
 // Created by Nikolai on 18.10.2021.
 //
 
-#include "SwitchWebWrapper.hpp"
+#include "SwitchBlynkWrapper.hpp"
 
-SwitchWebWrapper::SwitchWebWrapper(ISwitchBase* switchBase) : ISwitchBase("wrapper_" + switchBase->getName()){
+SwitchBlynkWrapper::SwitchBlynkWrapper(ISwitchBase* switchBase) : ISwitchBase("blynkWrapper_" + switchBase->getName()){
     _switch = switchBase;
 };
 
-bool SwitchWebWrapper::state() {
+bool SwitchBlynkWrapper::state() {
+    Serial.println("*** write state to Blynk");
+    //Blynk.virtualWrite(virtualPinNumber, _switch->state());
     return _switch->state();
 }
 
-void SwitchWebWrapper::turnOn() {
+void SwitchBlynkWrapper::turnOn() {
     _switch->turnOn();
+    Serial.println("*** write turn ON to Blynk");
+    //_blynk->virtualWrite(virtualPinNumber, _switch->state());
+    //Blynk.virtualWrite(virtualPinNumber, _switch->state());
 }
 
-void SwitchWebWrapper::turnOff() {
+void SwitchBlynkWrapper::turnOff() {
     _switch->turnOff();
+    Serial.println("*** write turn OFF to Blynk");
+    //_blynk->virtualWrite(virtualPinNumber, _switch->state());
+    //Blynk.virtualWrite(virtualPinNumber, _switch->state());
 }
 
-String SwitchWebWrapper::makeWebPage()  {
-    return "<div class = 'pomp' id='" + _name + "'>\
-<div class='device_header'>" + _webName + "\
-<div class='toggle-button-cover'>\
-<div class='button r' id='nice_button'>\
-<input type='checkbox' class='checkbox' id='" + _name + "_checkbox' onchange=\"send_request_to_Arduino('" + _name + "', 'state=' + ((this.checked)?'on':'off'))\">\
-<div class='knobs'></div>\
-<div class='layer'></div>\
-</div>\
-</div>\
-</div>\
-</div>";
+void SwitchBlynkWrapper::setVirtualPinNumber(int virtualPinNumber) {
+    this->virtualPinNumber = virtualPinNumber;
 }
 
-void SwitchWebWrapper::setWebName(String webName) {
-    _webName = webName;
+/*
+void SwitchBlynkWrapper::setBlynk(BlynkContriller* blynkController){
+    this->_blynk = blynk;
+}
+ */
+
+String SwitchBlynkWrapper::makeWebPage() {
+    return _switch->makeWebPage();
 }

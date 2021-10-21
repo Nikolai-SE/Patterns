@@ -4,7 +4,7 @@
 
 #include "SwitchWebWrapper.hpp"
 
-SwitchWebWrapper::SwitchWebWrapper(ISwitchBase* switchBase) : ISwitchBase("wrapper_" + switchBase->getName()){
+SwitchWebWrapper::SwitchWebWrapper(ISwitchBase* switchBase) : ISwitchBase("webWrapper_" + switchBase->getName()){
     _switch = switchBase;
 };
 
@@ -21,7 +21,7 @@ void SwitchWebWrapper::turnOff() {
 }
 
 String SwitchWebWrapper::makeWebPage()  {
-    return "<div class = 'pomp' id='" + _name + "'>\
+    return "<div class = 'switch' id='" + _name + "'>\
 <div class='device_header'>" + _webName + "\
 <div class='toggle-button-cover'>\
 <div class='button r' id='nice_button'>\
