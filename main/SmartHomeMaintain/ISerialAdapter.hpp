@@ -18,6 +18,9 @@ public:
     };
     virtual String get(String key) = 0;
     virtual void set(String key, String value) = 0;
+    String getName(){
+        return _name;
+    }
 };
 
 

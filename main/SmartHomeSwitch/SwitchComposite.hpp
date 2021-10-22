@@ -72,8 +72,8 @@ public:
         String webPage = "<div id = '";
         webPage += _name + "'>";
         for(int i = 0; i < size; i++) {
-            webPage += "\n*********";
             webPage += listOfSwitches[i]->makeWebPage();
+            webPage += "\n";
         }
         webPage += "</div>";
         return webPage;

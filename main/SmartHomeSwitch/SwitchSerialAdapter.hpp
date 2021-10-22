@@ -5,10 +5,10 @@
 #ifndef ARDUINOPROJECT_SWITCHSERIALADAPTER_HPP
 #define ARDUINOPROJECT_SWITCHSERIALADAPTER_HPP
 
-#include "../SmartHomeMaintain/ISerialAdapter.hpp"
-//#include "ISerialAdapter.hpp"
+//#include "../SmartHomeMaintain/ISerialAdapter.hpp"
+#include "ISerialAdapter.hpp"
 #include "ISwitchBase.hpp"
-#include "../../../../../../../Downloads/Installetion/IDE/Arduino/arduino-1.8.15-windows/arduino-1.8.15/hardware/arduino/avr/cores/arduino/WString.h"
+//#include "../../../../../../../Downloads/Installetion/IDE/Arduino/arduino-1.8.15-windows/arduino-1.8.15/hardware/arduino/avr/cores/arduino/WString.h"
 
 class SwitchSerialAdapter : public ISerialAdapter<ISwitchBase> {
 protected:
