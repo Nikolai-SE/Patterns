@@ -3,22 +3,27 @@
 #include <Switch.hpp>
 #include <SetDigitalPinValue.hpp>
 
+#include <SetDigitalPinValueFlyweight.hpp>
+
 #include <SwitchLogger.hpp>
-//#include <IGetValue.hpp>
 #include <SwitchWebWrapper.hpp>
 #include <SwitchBlynkWrapper.hpp>
 #include <SwitchComposite.hpp>
 #include <SwitchSerialAdapter.hpp>
+#include <SerialController.hpp>
 
 const int LED_PIN = LED_BUILTIN; 
 
 SetDigitalPinValue *pSwitchSetPin;
+SetDigitalPinValueFlyweight *pSetDigitalPinValueFlyweight;
 
 Switch *pSwitch;
 SwitchLogger *pSwitchLogger;
 SwitchWebWrapper *pSwitchWebWrapper;
 SwitchBlynkWrapper *pSwitchBlynkWrapper;
 SwitchComposite *pSwitchComposite;
+
+SerialController *pSerialController;
 
 SwitchSerialAdapter * pSwitchSerialAdapter;
 
@@ -27,9 +32,10 @@ void setup () {
   Serial.println("\n SETUP ");
  
   pSwitchSetPin = new SetDigitalPinValue(LED_PIN); 
+  pSetDigitalPinValueFlyweight = new SetDigitalPinValueFlyweight(LED_PIN, pSwitchSetPin);
   
   pSwitch = new Switch("originalSwitch");
-  pSwitch->setISetValue( pSwitchSetPin );
+  pSwitch->setISetValue( pSetDigitalPinValueFlyweight );
   
   
   pSwitchWebWrapper = new SwitchWebWrapper(pSwitch);
@@ -46,13 +52,17 @@ void setup () {
   pSwitchComposite->addSwitch(pSwitchBlynkWrapper);
   
   pSwitchSerialAdapter = new SwitchSerialAdapter("adapter", pSwitch);
-  
+
+  pSerialController = new SerialController(&Serial);
+  pSerialController->addSerialDevice(pSwitchSerialAdapter);
+
   Serial.println(" START ");
   delay(50);
 }
 
 void serialEvent() {
-  if (Serial && Serial.available()) {
+
+    if (Serial && Serial.available()) {
     // Чтение данных из порта Serial3
     char in_char = Serial.read();
     if(in_char == '0')
@@ -95,6 +105,7 @@ void serialEvent() {
 }
 
 void loop () {
-  serialEvent();
+  //serialEvent();
+  pSerialController->process();
   delay(50);
 }
