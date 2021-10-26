@@ -4,11 +4,12 @@
 #include <SetDigitalPinValue.hpp>
 
 #include <SwitchLogger.hpp>
-//#include <IGetValue.hpp>
 #include <SwitchWebWrapper.hpp>
 #include <SwitchBlynkWrapper.hpp>
 #include <SwitchComposite.hpp>
 #include <SwitchSerialAdapter.hpp>
+#include <SerialController.hpp>
+#include <WebWrapperTemplate.hpp>
 
 const int LED_PIN = LED_BUILTIN; 
 
@@ -16,9 +17,14 @@ SetDigitalPinValue *pSwitchSetPin;
 
 Switch *pSwitch;
 SwitchLogger *pSwitchLogger;
+
+WebWrapperTemplate *pWebWrapperTemplate;
 SwitchWebWrapper *pSwitchWebWrapper;
+
 SwitchBlynkWrapper *pSwitchBlynkWrapper;
 SwitchComposite *pSwitchComposite;
+
+SerialController *pSerialController;
 
 SwitchSerialAdapter * pSwitchSerialAdapter;
 
@@ -30,9 +36,21 @@ void setup () {
   
   pSwitch = new Switch("originalSwitch");
   pSwitch->setISetValue( pSwitchSetPin );
+
+  pWebWrapperTemplate = new WebWrapperTemplate("<div class = 'switch' id='%s'>\
+<div class='device_header'>%s\
+<div class='toggle-button-cover'>\
+<div class='button r' id='nice_button'>\
+<input type='checkbox' class='checkbox' id='%s_checkbox' onchange=\"send_request_to_Arduino('%s', 'state=' + ((this.checked)?'on':'off'))\">\
+<div class='knobs'></div>\
+<div class='layer'></div>\
+</div>\
+</div>\
+</div>\
+</div> \n");
+  pSwitchWebWrapper = new SwitchWebWrapper(pSwitch, pWebWrapperTemplate);
+  pSwitchWebWrapper->setWebName("WebName");
   
-  
-  pSwitchWebWrapper = new SwitchWebWrapper(pSwitch);
   
   pSwitchLogger = new SwitchLogger("switchLogger1", pSwitchWebWrapper);
   pSwitchLogger->setSerial(&Serial);
@@ -45,14 +63,18 @@ void setup () {
   pSwitchComposite->addSwitch(pSwitchWebWrapper);
   pSwitchComposite->addSwitch(pSwitchBlynkWrapper);
   
-  pSwitchSerialAdapter = new SwitchSerialAdapter("adapter", pSwitch);
+  pSwitchSerialAdapter = new SwitchSerialAdapter("adapter", pSwitchWebWrapper);
   
+  pSerialController = new SerialController(&Serial);
+  pSerialController->addSerialDevice(pSwitchSerialAdapter);
+
   Serial.println(" START ");
   delay(50);
 }
 
 void serialEvent() {
-  if (Serial && Serial.available()) {
+
+    if (Serial && Serial.available()) {
     // Чтение данных из порта Serial3
     char in_char = Serial.read();
     if(in_char == '0')
@@ -95,6 +117,8 @@ void serialEvent() {
 }
 
 void loop () {
-  serialEvent();
+  //serialEvent();
+  pSerialController->process();
+  //Serial.println(pSwitchWebWrapper->make
   delay(50);
 }

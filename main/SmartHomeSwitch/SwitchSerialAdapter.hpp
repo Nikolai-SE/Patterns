@@ -23,6 +23,11 @@ public:
             return String(device->state());
         }
         else
+        if(key == "webpage")
+        {
+            return String(device->makeWebPage());
+        }
+        else
         return "exception";
     }
 

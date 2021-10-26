@@ -6,18 +6,26 @@
 #define ARDUINOPROJECT_SWITCHWEBWRAPPER_HPP
 
 #include "ISwitchBase.hpp"
-//#include "../SmartHomeMaintain/ISwitchBase.hpp"
+#include "WebWrapperTemplate.hpp"
+
+//#define DEBUG
+#ifdef DEBUG
+#include "../SmartHomeMaintain/WebWrapperTemplate.hpp"
+#endif
+
 class SwitchWebWrapper : public ISwitchBase{
 protected:
     ISwitchBase *_switch;
-    String _webName;
+    WebWrapperTemplate* _webWrapperTemplate;
+    char* _webName = 0;
 public:
-    SwitchWebWrapper(ISwitchBase * switchBase);
+    SwitchWebWrapper(ISwitchBase * switchBase, WebWrapperTemplate* webWrapperTemplate);
     bool state() override;
     void turnOn() override;
     void turnOff() override;
     String makeWebPage() override;
     void setWebName(String webName);
+    ~SwitchWebWrapper();
 };
 
 
