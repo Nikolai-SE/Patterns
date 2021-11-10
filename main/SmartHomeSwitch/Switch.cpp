@@ -17,3 +17,11 @@ void Switch::turnOff() {
     _state = false;
 }
 
+Switch::Switch(Switch &aSwitch) : ISwitchBase(aSwitch){
+    _state = aSwitch._state;
+}
+
+ICloneable *Switch::clone() {
+    return new Switch(*this);
+}
+

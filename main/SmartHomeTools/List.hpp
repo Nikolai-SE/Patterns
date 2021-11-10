@@ -83,7 +83,7 @@ public:
         }
     }
 
-    ListIterator<U> begin() override {
+    const ListIterator<U> begin() override {
         ListIterator<U> it(*this->root);
         return it;
     }

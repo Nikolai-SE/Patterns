@@ -28,7 +28,7 @@ public:
             return String(device->makeWebPage());
         }
         else
-        return "exception";
+        return "exception: key is not found";
     }
 
     void set(String key, String value) override {

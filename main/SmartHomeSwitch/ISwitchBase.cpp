@@ -2,7 +2,6 @@
 
 ISwitchBase::ISwitchBase(const String &name) : IDevice(name) {}
 
-String ISwitchBase::makeWebPage()  {
-    return "";
+ISwitchBase::ISwitchBase(ISwitchBase &iSwitchBase) : IDevice(iSwitchBase) {
 }
 

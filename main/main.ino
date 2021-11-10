@@ -1,5 +1,4 @@
 #include <ESP8266WiFi.h>
-
 #include <Switch.hpp>
 #include <SetDigitalPinValue.hpp>
 
@@ -16,6 +15,7 @@ const int LED_PIN = LED_BUILTIN;
 SetDigitalPinValue *pSwitchSetPin;
 
 Switch *pSwitch;
+Switch *pSwitchCopy;
 SwitchLogger *pSwitchLogger;
 
 WebWrapperTemplate *pWebWrapperTemplate;
@@ -25,6 +25,7 @@ SwitchBlynkWrapper *pSwitchBlynkWrapper;
 SwitchComposite *pSwitchComposite;
 
 SerialController *pSerialController;
+SerialController* pSerialControllerCopy;
 
 SwitchSerialAdapter * pSwitchSerialAdapter;
 
@@ -36,6 +37,8 @@ void setup () {
   
   pSwitch = new Switch("originalSwitch");
   pSwitch->setISetValue( pSwitchSetPin );
+
+  pSwitchCopy = (Switch*) pSwitch->clone();
 
   pWebWrapperTemplate = new WebWrapperTemplate("<div class = 'switch' id='%s'>\
 <div class='device_header'>%s\
@@ -51,7 +54,6 @@ void setup () {
   pSwitchWebWrapper = new SwitchWebWrapper(pSwitch, pWebWrapperTemplate);
   pSwitchWebWrapper->setWebName("WebName");
   
-  
   pSwitchLogger = new SwitchLogger("switchLogger1", pSwitchWebWrapper);
   pSwitchLogger->setSerial(&Serial);
 
@@ -62,12 +64,14 @@ void setup () {
   pSwitchComposite->addSwitch(pSwitchLogger);
   pSwitchComposite->addSwitch(pSwitchWebWrapper);
   pSwitchComposite->addSwitch(pSwitchBlynkWrapper);
-  
-  pSwitchSerialAdapter = new SwitchSerialAdapter("adapter", pSwitchWebWrapper);
-  
+    
   pSerialController = new SerialController(&Serial);
-  pSerialController->addSerialDevice(pSwitchSerialAdapter);
+  
+  pSerialControllerCopy = new SerialController(*pSerialController);
+  pSerialControllerCopy->addSerialDevice(new SwitchSerialAdapter("adapter", pSwitchWebWrapper));
+  pSerialControllerCopy->addSerialDevice(new SwitchSerialAdapter("swc", pSwitchCopy));
 
+  
   Serial.println(" START ");
   delay(50);
 }
@@ -118,7 +122,6 @@ void serialEvent() {
 
 void loop () {
   //serialEvent();
-  pSerialController->process();
-  //Serial.println(pSwitchWebWrapper->make
+  pSerialControllerCopy->process();
   delay(50);
 }

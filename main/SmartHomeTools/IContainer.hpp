@@ -15,7 +15,7 @@ public:
     virtual void remove(int position) = 0;
     virtual int size() = 0;
     virtual void clear() = 0;
-    virtual U begin() = 0;
+    virtual const U begin() = 0;
     virtual const U end() = 0;
 };
 

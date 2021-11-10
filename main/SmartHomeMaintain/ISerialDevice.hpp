@@ -5,6 +5,7 @@
 #ifndef ARDUINOPROJECT_ISERIALDEVICE_HPP
 #define ARDUINOPROJECT_ISERIALDEVICE_HPP
 
+#include <Arduino.h>
 
 class ISerialDevice {
 protected:

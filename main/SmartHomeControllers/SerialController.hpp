@@ -6,57 +6,46 @@
 #define ARDUINOPROJECT_SERIALCONTROLLER_HPP
 
 #include <ISerialDevice.hpp>
+#include <IController.hpp>
+#include <Switch.hpp>
+#include <SwitchSerialAdapter.hpp>
 //#define DEBUG
 #ifdef DEBUG
 #include "../SmartHomeMaintain/ISerialDevice.hpp"
+#include "../SmartHomeMaintain/IDevice.hpp"
+#include "IController.hpp"
 #include "../../../../../../../Downloads/Installetion/IDE/Arduino/arduino-1.8.15-windows/arduino-1.8.15/hardware/arduino/avr/cores/arduino/HardwareSerial.h"
+#include "../SmartHomeSwitch/Switch.hpp"
+#include "../SmartHomeSwitch/SwitchSerialAdapter.hpp"
+
 #endif
 
-class SerialController {
+#define REQUEST_MODE 1
+#define SET_MODE 2
+
+class SerialController : public IController{
 protected:
     HardwareSerial *_serial;
-    const static int maxSize = 20;
-    int size = 0;
-    ISerialDevice* listOfDevices[maxSize];
-    int delSerialDevice(int number)
-    {
-        if(number < size){
-            for(int i = number; i < size - 1; i++)
-            {
-                listOfDevices[i] = listOfDevices[i+1];
-            }
-            listOfDevices[size--] = 0;
-            return 0;
-        }
-        return 1;
-    }
-    int findDeviceIndex(String name)
-    {
-        for(int index = 0; index < size; index++)
-        {
-            if(listOfDevices[index]->getName() == name)
-                return index;
-        }
-        return -1;
-    }
 public:
-    SerialController(HardwareSerial* serial)
+    SerialController(HardwareSerial* serial) : IController()
     {
         _serial = serial;
     }
-    void addSerialDevice(ISerialDevice* iSerialDevice)
+    SerialController(SerialController& serialController) : IController(serialController)
     {
-        if(size < maxSize)
-        {
-            listOfDevices[size++] = iSerialDevice;
-        }
-    };
-    void delSerialDevice(String name)
+        _serial = serialController._serial;
+    }
+
+    /*void addSwitch(Switch *aSwitch)
     {
-        int indexToDel = findDeviceIndex(name);
-        if(indexToDel > -1)
-            delSerialDevice(indexToDel);
-    };
+        Serial.println(" add switch ");
+        addSerialDevice( (ISerialDevice*) new SwitchSerialAdapter("adapter", aSwitch) );
+    }
+
+    void addDevice(IDevice *iDevice) override {
+        if(typeDevice(iDevice) == 1)
+            addSwitch((Switch *)(iDevice));
+    }*/
 
     /// Syntax of the command assumes:
     /// nameOfDevice.internalDeviceName
@@ -68,44 +57,47 @@ public:
     String handle(String command)
     {
         String answer = "";
-        int indexOfRequestSign = command.indexOf('?'); // 1 mode
-        int indexOfSetSign = command.indexOf(':'); // 2 mode
+        int indexOfRequestSign = command.indexOf('?'); // 1 REQUEST_MODE
+        int indexOfSetSign = command.indexOf(':'); // 2 SET_MODE
         int mode = -1;
         int modeIndex = 2048;
-
         if(indexOfRequestSign >= 0){
             if(modeIndex > indexOfRequestSign)
             {
                 modeIndex = indexOfRequestSign;
-                mode = 1;
+                mode = REQUEST_MODE;
             }
         }
         if(indexOfSetSign >= 0){
             if(modeIndex > indexOfSetSign)
             {
                 modeIndex = indexOfSetSign;
-                mode = 2;
+                mode = SET_MODE;
             }
         }
-
         int deviceIndex = findDeviceIndex(command.substring(0, modeIndex));
+
+        ISerialDevice* serialDevice = nullptr;
 
         if(deviceIndex == -1){
             answer += "Device \"";
             answer += findDeviceIndex(command.substring(0, modeIndex)) + "\" wasn't found";
         }
-
-        ISerialDevice* device = listOfDevices[deviceIndex];
+        else
+        {
+            serialDevice = listOfSerialDevices[deviceIndex];
+        }
 
         switch (mode) {
-            case 1:
-                _serial->println(device->get(command.substring(modeIndex + 1)));
+            case REQUEST_MODE:
+                answer += serialDevice->get(command.substring(modeIndex + 1));
+                _serial->println(answer);
                 break;
-            case 2:
+            case SET_MODE:
                 {
                     int indexOfEq = command.indexOf('=');
-                    device->set(command.substring(modeIndex + 1,
-                                                  indexOfEq), command.substring(indexOfEq + 1));
+                    serialDevice->set(command.substring(modeIndex + 1,
+                                                        indexOfEq), command.substring(indexOfEq + 1));
                 }
                 break;
             default:
@@ -113,12 +105,13 @@ public:
         }
         return answer;
     }
-    int process()
-    {
+
+    int process() override {
         if(_serial && _serial->available())
         {
             handle(_serial->readStringUntil('\n'));
         }
+        return 0;
     }
 };
 

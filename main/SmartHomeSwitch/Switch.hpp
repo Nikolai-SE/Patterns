@@ -9,6 +9,10 @@ public:
     static const int const_isOff = 0;
     static const int const_isOn = 1;
     Switch(String name, bool defaultState = const_isOff);
+    Switch(Switch & aSwitch);
+
+    ICloneable *clone() override;
+
     bool state() override;
     void turnOn() override;
     void turnOff() override;
