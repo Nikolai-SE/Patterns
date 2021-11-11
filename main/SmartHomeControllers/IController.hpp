@@ -6,7 +6,6 @@
 #define ARDUINOPROJECT_ICONTROLLER_HPP
 
 #include <ISerialDevice.hpp>
-#include <IDevice.hpp>
 #include <List.hpp>
 //#define DEBUG
 #ifdef DEBUG

@@ -8,6 +8,7 @@
 #include <SwitchComposite.hpp>
 #include <SwitchSerialAdapter.hpp>
 #include <SerialController.hpp>
+#include <WebController.hpp>
 #include <WebWrapperTemplate.hpp>
 
 const int LED_PIN = LED_BUILTIN; 
@@ -71,8 +72,7 @@ void setup () {
   pSerialControllerCopy->addSerialDevice(new SwitchSerialAdapter("adapter", pSwitchWebWrapper));
   pSerialControllerCopy->addSerialDevice(new SwitchSerialAdapter("swc", pSwitchCopy));
 
-  
-  Serial.println(" START ");
+  Serial.println(" START ");  
   delay(50);
 }
 
