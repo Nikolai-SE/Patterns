@@ -12,7 +12,7 @@
 #endif
 
 class IDevice : public ICloneable {
-  protected:
+protected:
     String _name = "";
     void *iGetValue = nullptr;
     void *iSetValue = nullptr;

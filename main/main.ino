@@ -65,7 +65,7 @@ void setup () {
   pSwitchComposite->addSwitch(pSwitchLogger);
   pSwitchComposite->addSwitch(pSwitchWebWrapper);
   pSwitchComposite->addSwitch(pSwitchBlynkWrapper);
-    
+   
   pSerialController = new SerialController(&Serial);
   
   pSerialControllerCopy = new SerialController(*pSerialController);

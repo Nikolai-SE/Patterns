@@ -10,11 +10,11 @@ String IDevice::getName()
   return _name;
 }
 
-void IDevice::setISetValue(void *iSetValue) {
+void IDevice::setISetValue(void* iSetValue) {
     this->iSetValue = iSetValue;
 }
 
-void IDevice::setIGetValue(void *iGetValue) {
+void IDevice::setIGetValue(void* iGetValue) {
     this->iGetValue = iGetValue;
 }
 
