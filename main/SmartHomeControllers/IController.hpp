@@ -7,6 +7,7 @@
 
 #include <ISerialDevice.hpp>
 #include <List.hpp>
+#include <Switch.hpp>
 //#define DEBUG
 #ifdef DEBUG
 #include "../SmartHomeMaintain/ISerialDevice.hpp"
@@ -24,7 +25,7 @@ public:
     IController(){};
     IController(IController &iController);
     void addSerialDevice(ISerialDevice* iSerialDevice);
-    //virtual void addDevice(IDevice* iDevice) = 0;
+    virtual void addSwitch(ISwitchBase* iSwitchBase) = 0;
     void delSerialDevice(String name);
     virtual int process() = 0;
     ~IController();

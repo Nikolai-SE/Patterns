@@ -36,6 +36,9 @@ public:
         _serial = serialController._serial;
     }
 
+    void addSwitch(ISwitchBase *iSwitchBase) override {
+        addSerialDevice( (ISerialDevice*) new SwitchSerialAdapter("sa_" + iSwitchBase->getName(), iSwitchBase) );
+    }
     /*void addSwitch(Switch *aSwitch)
     {
         Serial.println(" add switch ");

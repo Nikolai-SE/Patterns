@@ -5,7 +5,7 @@
 #include "HardwareDeviceFactory.hpp"
 
 Switch* &HardwareDeviceFactory::makeSwitch(const String name, List<void*> args)
-// argv { pin : int, [default state : int], [pin for get state : int]  }
+// args { pin : int, [default state : int], [pin for get state : int]  }
 {
     int defaultState = 0;
     if(args.size() >= 2)
