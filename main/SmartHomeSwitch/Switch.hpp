@@ -1,10 +1,14 @@
 #pragma once
 #include "ISwitchBase.hpp"
-//#include "../SmartHomeMaintain/ISwitchBase.hpp"
+#include <ICloneable.hpp>
+//class SwitchState;
+//class Switch;
+#include "SwitchState.hpp"
+#include "../SmartHomeMaintain/ICloneable.hpp"
 
 class Switch : public ISwitchBase {
 protected:
-    bool _state = false;
+    SwitchState* pState = nullptr;
 public:
     static const int const_isOff = 0;
     static const int const_isOn = 1;
@@ -16,4 +20,6 @@ public:
     bool state() override;
     void turnOn() override;
     void turnOff() override;
+    void setState(SwitchState* newState);
+    void setVal(bool val);
 };

@@ -4,7 +4,7 @@
 
 #include "SwitchWebWrapper.hpp"
 
-SwitchWebWrapper::SwitchWebWrapper(ISwitchBase* switchBase, WebWrapperTemplate* webWrapperTemplate) : ISwitchBase("webWrapper_" + switchBase->getName()){
+SwitchWebWrapper::SwitchWebWrapper(ISwitchBase* switchBase, WebWrapperTemplate* webWrapperTemplate) : ISwitchBase(switchBase->getName()){
     _switch = switchBase;
     _webWrapperTemplate = webWrapperTemplate;
 };

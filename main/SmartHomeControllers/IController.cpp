@@ -43,3 +43,4 @@ IController::~IController() {
     }
     listOfSerialDevices.clear();
 }
+

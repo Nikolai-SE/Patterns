@@ -17,7 +17,6 @@
 #include "../../../../../../../Downloads/Installetion/IDE/Arduino/arduino-1.8.15-windows/arduino-1.8.15/hardware/arduino/avr/cores/arduino/HardwareSerial.h"
 #include "../SmartHomeSwitch/Switch.hpp"
 #include "../SmartHomeSwitch/SwitchSerialAdapter.hpp"
-
 #endif
 
 #define REQUEST_MODE 1
@@ -36,15 +35,10 @@ public:
         _serial = serialController._serial;
     }
 
-    void addSwitch(ISwitchBase *iSwitchBase) override {
+    /*void addSwitch(ISwitchBase *iSwitchBase) override {
         addSerialDevice( (ISerialDevice*) new SwitchSerialAdapter("sa_" + iSwitchBase->getName(), iSwitchBase) );
     }
-    /*void addSwitch(Switch *aSwitch)
-    {
-        Serial.println(" add switch ");
-        addSerialDevice( (ISerialDevice*) new SwitchSerialAdapter("adapter", aSwitch) );
-    }
-
+    /*
     void addDevice(IDevice *iDevice) override {
         if(typeDevice(iDevice) == 1)
             addSwitch((Switch *)(iDevice));
@@ -84,27 +78,25 @@ public:
 
         if(deviceIndex == -1){
             answer += "Device \"";
-            answer += findDeviceIndex(command.substring(0, modeIndex)) + "\" wasn't found";
+            answer += command.substring(0, modeIndex) + "\" wasn't found\n";
         }
-        else
-        {
+        else {
             serialDevice = listOfSerialDevices[deviceIndex];
-        }
-
-        switch (mode) {
-            case REQUEST_MODE:
-                answer += serialDevice->get(command.substring(modeIndex + 1));
-                _serial->println(answer);
-                break;
-            case SET_MODE:
-                {
+            switch (mode) {
+                case REQUEST_MODE:
+                    answer += serialDevice->get(command.substring(modeIndex + 1));
+                    answer += '\n';
+                    //_serial->println(answer);
+                    break;
+                case SET_MODE: {
                     int indexOfEq = command.indexOf('=');
                     serialDevice->set(command.substring(modeIndex + 1,
                                                         indexOfEq), command.substring(indexOfEq + 1));
                 }
-                break;
-            default:
-                break;
+                    break;
+                default:
+                    break;
+            }
         }
         return answer;
     }
@@ -112,7 +104,7 @@ public:
     int process() override {
         if(_serial && _serial->available())
         {
-            handle(_serial->readStringUntil('\n'));
+            _serial->print(handle(_serial->readStringUntil('\n')));
         }
         return 0;
     }

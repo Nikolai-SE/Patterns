@@ -24,6 +24,7 @@ public:
     void turnOn() override;
     void turnOff() override;
     String makeWebPage() override;
+
     void setWebName(String webName);
     ~SwitchWebWrapper();
 };

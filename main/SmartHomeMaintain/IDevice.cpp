@@ -32,3 +32,7 @@ ICloneable *IDevice::clone() {
     return new IDevice(*this);
 }
 
+int IDevice::getTypeOfDevice() {
+    return 0;
+}
+

@@ -26,4 +26,5 @@ public:
     void setISetValue(void*);
     void setIGetValue(void*);
     virtual String makeWebPage();
+    virtual  int getTypeOfDevice();
 };

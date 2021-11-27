@@ -1,127 +1,141 @@
 #include <ESP8266WiFi.h>
 #include <Switch.hpp>
-#include <SetDigitalPinValue.hpp>
-
-#include <SwitchLogger.hpp>
+#include <List.hpp>
 #include <SwitchWebWrapper.hpp>
-#include <SwitchBlynkWrapper.hpp>
-#include <SwitchComposite.hpp>
-#include <SwitchSerialAdapter.hpp>
-#include <SerialController.hpp>
 #include <WebController.hpp>
 #include <WebWrapperTemplate.hpp>
 
+#include <MakeConcreteSerialAdapters.hpp>
+#include <SerialController.hpp>
+#include <WebController.hpp>
+
+#include <HardwareDeviceFactory.hpp>
+
 const int LED_PIN = LED_BUILTIN; 
 
-SetDigitalPinValue *pSwitchSetPin;
-
-Switch *pSwitch;
-Switch *pSwitchCopy;
-SwitchLogger *pSwitchLogger;
-
+ISwitchBase *pSwitch;
+HardwareDeviceFactory* pHardwareDeviceFactory;
 WebWrapperTemplate *pWebWrapperTemplate;
 SwitchWebWrapper *pSwitchWebWrapper;
 
-SwitchBlynkWrapper *pSwitchBlynkWrapper;
-SwitchComposite *pSwitchComposite;
-
 SerialController *pSerialController;
-SerialController* pSerialControllerCopy;
+MakeConcreteSerialAdapters *pMakeConcreteSerialAdapters;
+WebController *pWebController = 0;
 
-SwitchSerialAdapter * pSwitchSerialAdapter;
+int get_rssi(String ssid) {
+  int ret = -150;
+  // set wifi mode
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  delay(100);
+  // WiFi.scanNetworks will return the number of networks found
+  int n = WiFi.scanNetworks();
+  while (n) {
+    if (ssid.equals(WiFi.SSID(--n))) {
+      ret = WiFi.RSSI(n);
+      break;
+    }
+  }
+  return ret;
+}
 
-void setup () {
-  Serial.begin ( 115200 );
-  Serial.println("\n SETUP ");
- 
-  pSwitchSetPin = new SetDigitalPinValue(LED_PIN); 
+bool ap_run = 0;
+int ap_run_time = 0;
+const int time_limit = 30000;
+int wifi_connection() {
+  const char *ssid = "LocalWiFi";
+  const char *password = "sdfbh342njsdf";
+  const char *self_password = "password";
+  const char *self_ssid = "test";
+
+  if ((!ap_run && WiFi.status() == WL_CONNECTED) || (ap_run && (millis() - ap_run_time) <= time_limit))
+    return 0;
+  WiFi.disconnect();
+  delay(500);
+
+  int rssi = 0;
+  rssi = get_rssi(ssid);
+  if ((!ap_run || (millis() - ap_run_time) > time_limit) && rssi > -100) {
+    ap_run = 0;
+    ap_run_time = 0;
+    WiFi.mode(WIFI_STA);
+    WiFi.begin ( ssid, password );
+    while ( WiFi.status() != WL_CONNECTED ) {
+      delay ( 500 );
+      Serial.print ( "." );
+    }
+  }
+  else {
+    WiFi.mode(WIFI_AP); //WIFI_AP (точка доступа), WIFI_STA (клиент), или WIFI_AP_STA (оба режима одновременно).
+    //WiFi.mode(WIFI_AP_STA); 
+    //WiFi.softAP(self_ssid, self_password);
+    WiFi.begin ( ssid, password );
+    ap_run = 1;
+    ap_run_time = millis(); 
+  }
+  delay(100);
   
-  pSwitch = new Switch("originalSwitch");
-  pSwitch->setISetValue( pSwitchSetPin );
+  WiFi.printDiag(Serial);
+  Serial.print ( "IP = " );
+  Serial.println ( WiFi.localIP() );
+  delay(100);
 
-  pSwitchCopy = (Switch*) pSwitch->clone();
+  pWebController = WebController::GetInstance(80);
+  
+  return 1;
+};
 
-  pWebWrapperTemplate = new WebWrapperTemplate("<div class = 'switch' id='%s'>\
+
+void initDevices()
+{
+  // создаем на фабрике переключатель и присваиваем ему команды для того, чтобы он переключал физическое состояние пина
+  List<void*> args;
+  args.insert(new int(LED_PIN));
+  args.insert(new int(0));
+  pHardwareDeviceFactory = new HardwareDeviceFactory();
+  pSwitch = pHardwareDeviceFactory->makeSwitch("switch", args);
+  delete pHardwareDeviceFactory;
+  
+  // добавляем переключателю возможность создавать web представление по шаблону
+  pWebWrapperTemplate = new WebWrapperTemplate("<div class = 'device' id='%s'>\
 <div class='device_header'>%s\
 <div class='toggle-button-cover'>\
 <div class='button r' id='nice_button'>\
-<input type='checkbox' class='checkbox' id='%s_checkbox' onchange=\"send_request_to_Arduino('%s', 'state=' + ((this.checked)?'on':'off'))\">\
+<input type='checkbox' class='checkbox' id='%s_state' onchange=\"send_request_to_Arduino('%s', 'state=' + ((this.checked)?'on':'off'))\">\
 <div class='knobs'></div>\
 <div class='layer'></div>\
 </div>\
 </div>\
 </div>\
 </div> \n");
-  pSwitchWebWrapper = new SwitchWebWrapper(pSwitch, pWebWrapperTemplate);
-  pSwitchWebWrapper->setWebName("WebName");
+  SwitchWebWrapper* pSwitchWebWrapper = new SwitchWebWrapper(pSwitch, pWebWrapperTemplate);
+  pSwitchWebWrapper->setWebName("Выключатель");
+  pSwitch = pSwitchWebWrapper;
   
-  pSwitchLogger = new SwitchLogger("switchLogger1", pSwitchWebWrapper);
-  pSwitchLogger->setSerial(&Serial);
-
-  pSwitchBlynkWrapper = new SwitchBlynkWrapper(pSwitchLogger);
-  
-  pSwitchComposite = new SwitchComposite("switchComposite");
-  pSwitchComposite->addSwitch(pSwitch);
-  pSwitchComposite->addSwitch(pSwitchLogger);
-  pSwitchComposite->addSwitch(pSwitchWebWrapper);
-  pSwitchComposite->addSwitch(pSwitchBlynkWrapper);
-   
+  // инициализируем контреллер последоватьельного порта ввода вывода для управления устройствами через консоль
   pSerialController = new SerialController(&Serial);
-  
-  pSerialControllerCopy = new SerialController(*pSerialController);
-  pSerialControllerCopy->addSerialDevice(new SwitchSerialAdapter("adapter", pSwitchWebWrapper));
-  pSerialControllerCopy->addSerialDevice(new SwitchSerialAdapter("swc", pSwitchCopy));
 
+  // добавляем контролерам устройство
+  pMakeConcreteSerialAdapters = new MakeConcreteSerialAdapters();
+  ISerialAdapter<IDevice>* ssa = &(pMakeConcreteSerialAdapters->makeSerialAdapter((IDevice*)pSwitch));
+  pSerialController->addSerialDevice(ssa);
+  pWebController->addSerialDevice(ssa);
+  
+  delete pMakeConcreteSerialAdapters;
+}
+
+void setup () {
+  Serial.begin ( 115200 );
+  Serial.println("\n SETUP ");
+  wifi_connection();
+  initDevices();
   Serial.println(" START ");  
   delay(50);
 }
 
-void serialEvent() {
-
-    if (Serial && Serial.available()) {
-    // Чтение данных из порта Serial3
-    char in_char = Serial.read();
-    if(in_char == '0')
-    {
-        pSwitchComposite->turnOff();
-    }
-    else
-    if(in_char == '1')
-    {
-        pSwitchComposite->turnOn();
-    }
-    else
-    if(in_char == 'w')
-    {
-        Serial.println(pSwitchComposite->makeWebPage());
-    }
-    else
-    if(in_char == 'a')
-    {
-        in_char = Serial.read();
-        String inp = Serial.readStringUntil('\n');
-        Serial.println("The whole input: " + inp);
-        if (in_char == '?')
-        {
-          Serial.println(pSwitchSerialAdapter->get(inp));
-        }
-        else if (in_char == ':')
-        {
-          String inpVal = inp.substring(inp.indexOf('=') + 1);
-          inp = inp.substring(0, inp.indexOf('='));
-          pSwitchSerialAdapter->set(inp, inpVal);
-        }
-        else
-        {
-          Serial.println("ERROR input mode char: "); 
-          Serial.println( "\\" + int(in_char)); 
-        }
-    }    
-  }
-}
-
 void loop () {
-  //serialEvent();
-  pSerialControllerCopy->process();
-  delay(50);
+  wifi_connection();
+  pSerialController->process();
+  pWebController->process();
+  delay(5);
 }

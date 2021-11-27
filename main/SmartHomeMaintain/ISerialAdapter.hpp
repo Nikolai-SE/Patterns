@@ -12,6 +12,9 @@ class ISerialAdapter : public ISerialDevice{
 protected:
     T* device;
 public:
+    ISerialAdapter(){
+        device = nullptr;
+    };
     ISerialAdapter(String name, T* device) : ISerialDevice(name)
     {
         this->device = device;
