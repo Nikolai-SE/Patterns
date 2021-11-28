@@ -11,53 +11,53 @@
 
 #include <HardwareDeviceFactory.hpp>
 
-const int LED_PIN = LED_BUILTIN; 
+const int LED_PIN = LED_BUILTIN; // пин для демонстрации работы устройства
 
-ISwitchBase *pSwitch;
-HardwareDeviceFactory* pHardwareDeviceFactory;
-WebWrapperTemplate *pWebWrapperTemplate;
-SwitchWebWrapper *pSwitchWebWrapper;
+ISwitchBase *pSwitch = 0; // переключатель
+HardwareDeviceFactory* pHardwareDeviceFactory = 0;
+WebWrapperTemplate *pWebWrapperTemplate = 0;
+SwitchWebWrapper *pSwitchWebWrapper = 0;
 
-SerialController *pSerialController;
+SerialController *pSerialController = 0;
 MakeConcreteSerialAdapters *pMakeConcreteSerialAdapters;
 WebController *pWebController = 0;
 
-int get_rssi(String ssid) {
-  int ret = -150;
-  // set wifi mode
+int getRssi(String ssid) {
+  int rssi = -200;
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   delay(100);
-  // WiFi.scanNetworks will return the number of networks found
   int n = WiFi.scanNetworks();
-  while (n) {
-    if (ssid.equals(WiFi.SSID(--n))) {
-      ret = WiFi.RSSI(n);
+  while (n--)
+    if (ssid.equals(WiFi.SSID(n))) {
+      rssi = WiFi.RSSI(n);
       break;
     }
-  }
-  return ret;
+  return rssi;
 }
 
-bool ap_run = 0;
-int ap_run_time = 0;
+bool apIsRun = 0;
+int apRunTime = 0;
 const int time_limit = 30000;
-int wifi_connection() {
+int wifi_connection() { // проверяет подключение к сети
+  // и переводит модуль в режим клиента
+  // или точки доступа, если при плохом подключении
+  // проверяет раз в time_limit миллисекунд
+  
   const char *ssid = "LocalWiFi";
   const char *password = "sdfbh342njsdf";
   const char *self_password = "password";
   const char *self_ssid = "test";
 
-  if ((!ap_run && WiFi.status() == WL_CONNECTED) || (ap_run && (millis() - ap_run_time) <= time_limit))
+  if ((!apIsRun && WiFi.status() == WL_CONNECTED) || (apIsRun && (millis() - apRunTime) <= time_limit))
     return 0;
   WiFi.disconnect();
   delay(500);
 
-  int rssi = 0;
-  rssi = get_rssi(ssid);
-  if ((!ap_run || (millis() - ap_run_time) > time_limit) && rssi > -100) {
-    ap_run = 0;
-    ap_run_time = 0;
+  int rssi = getRssi(ssid);
+  if ((!apIsRun || (millis() - apRunTime) > time_limit) && rssi > -100) {
+    apIsRun = 0;
+    apRunTime = 0;
     WiFi.mode(WIFI_STA);
     WiFi.begin ( ssid, password );
     while ( WiFi.status() != WL_CONNECTED ) {
@@ -66,12 +66,11 @@ int wifi_connection() {
     }
   }
   else {
-    WiFi.mode(WIFI_AP); //WIFI_AP (точка доступа), WIFI_STA (клиент), или WIFI_AP_STA (оба режима одновременно).
-    //WiFi.mode(WIFI_AP_STA); 
-    //WiFi.softAP(self_ssid, self_password);
+    WiFi.mode(WIFI_AP_STA); //WIFI_AP (точка доступа), WIFI_STA (клиент), или WIFI_AP_STA (оба режима одновременно).
+    WiFi.softAP(self_ssid, self_password);
     WiFi.begin ( ssid, password );
-    ap_run = 1;
-    ap_run_time = millis(); 
+    apIsRun = 1;
+    apRunTime = millis(); 
   }
   delay(100);
   
@@ -79,12 +78,9 @@ int wifi_connection() {
   Serial.print ( "IP = " );
   Serial.println ( WiFi.localIP() );
   delay(100);
-
   pWebController = WebController::GetInstance(80);
-  
   return 1;
 };
-
 
 void initDevices()
 {
@@ -97,6 +93,7 @@ void initDevices()
   delete pHardwareDeviceFactory;
   
   // добавляем переключателю возможность создавать web представление по шаблону
+  // Использованы мателриалы с сайта https://codepen.io/himalayasingh/pen/EdVzNL
   pWebWrapperTemplate = new WebWrapperTemplate("<div class = 'device' id='%s'>\
 <div class='device_header'>%s\
 <div class='toggle-button-cover'>\

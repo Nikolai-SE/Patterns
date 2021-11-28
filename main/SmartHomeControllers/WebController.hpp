@@ -60,7 +60,7 @@ protected:
 
             String json = "{";
             for (int i = 1; i < server->args() - 1; i++) {
-                if (server->argName(i) == "param") {
+                if (server->argName(i) == "get") {
                     json += '"' + server->arg(i) + '"' + ':' + '"' + serialDevice->get(server->arg(i))  + '"';
                 }
                 else
@@ -187,6 +187,8 @@ void fun_handleNotFound()
 };
 
 char* WebController::homePageStart = "<!DOCTYPE html> <html> <head> <title>Умный дом</title> <meta charset='utf-8'>\0";
+
+// Использованы мателриалы с сайта https://codepen.io/himalayasingh/pen/EdVzNL
 char* WebController::style = "<style> *{ user-select: none; -webkit-tap-highlight-color:transparent; } div.device { display: block; position: relative; background: #559BC0 ; width: 23%; min-width: 200pt; border-width: 30pt; border-color: #84290E; border-radius: 5pt; margin: 20pt; padding: 10pt; align-content: right; }"
                            " @media screen and (max-width: 150em) { header{font-size: 300%;} div.device {width: 80%; font-size: 180%;} input{font-size: 80%;}} html { background: #72A4C0; text-decoration-color: #0B3A54; color: black; font-size: 140%; font-family: monospace; font-style: oblique; }"
                            " header{ font-size: 210%; text-align: center; font-style: bold; } .toggle-button-cover { display: table-cell; position: absolute; right: 10px; top: 18px; width: 74px; height: 16px; box-sizing: border-box; } .button-cover, .knobs, .layer { position: absolute; top: 0; right: 0; bottom: 0; left: 0; }"
@@ -214,7 +216,7 @@ char* WebController::javaScript = "<script type='text/javascript'> function $(x)
                                   " console.log(params, ' sended to server -- ', request.statusText);"
                                   " }"
                                   " function update(){ "
-                                  "     send_request_to_Arduino('switch', 'param=state');"
+                                  "     send_request_to_Arduino('switch', 'get=state');"
                                   " }"
                                   " setInterval(update, 5000); update(); </script>\0";
 char* WebController::bodyStart = "</head> <body> <header>Умный дом</header> <main>\0";
